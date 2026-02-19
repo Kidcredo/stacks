@@ -1,0 +1,15 @@
+services:
+  jellyfin:
+    container_name: jellyfin
+    image: jellyfin/jellyfin:latest
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ${KD_CONFIG}:/config
+      - ${KD_CACHE}:/cache
+      - ${KD_MEDIA}:/media
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true

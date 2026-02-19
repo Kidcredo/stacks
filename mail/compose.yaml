@@ -1,0 +1,12 @@
+services:
+  mailcatch:
+    container_name: mailcatch
+    image: sj26/mailcatcher:latest
+    restart: always
+    expose:
+      - "1025"
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true

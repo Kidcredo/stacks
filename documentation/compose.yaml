@@ -1,0 +1,31 @@
+services:
+  docmost:
+    container_name: docmost
+    image: docmost/docmost:latest
+    user: 1000:1000
+    env_file: .env
+    depends_on:
+      - docmost-db
+      - docmost-valkey
+    restart: unless-stopped
+    volumes:
+      - ${KD_DOC_DATA}/:/app/data/storage
+    networks:
+      - kidcredo
+  docmost-db:
+    container_name: docmost-db
+    image: postgres:18-alpine
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - ${KD_DB_DATA}:/var/lib/postgresql/data
+    networks:
+      - kidcredo
+  docmost-valkey:
+    image: valkey/valkey:9-alpine
+    restart: unless-stopped
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true

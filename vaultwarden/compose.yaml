@@ -1,0 +1,12 @@
+services:
+  vaultwarden:
+    container_name: vaultwarden
+    volumes:
+      - ${KD_VAULT}:/data/
+    restart: unless-stopped
+    image: vaultwarden/server:latest
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true

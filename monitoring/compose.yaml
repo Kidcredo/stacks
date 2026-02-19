@@ -1,0 +1,12 @@
+services:
+  stats:
+    container_name: uptime-kuma
+    image: louislam/uptime-kuma:1
+    volumes:
+      - ${KD_DATA}:/app/data
+    restart: unless-stopped
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true

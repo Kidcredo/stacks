@@ -1,0 +1,9 @@
+services:
+  chatbot:
+    container_name: langflow
+    image: langflowai/langflow:latest
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true

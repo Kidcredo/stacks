@@ -1,0 +1,14 @@
+services:
+  code-server:
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: code-server
+    volumes:
+      - ${KD_CONFIG}:/config
+    restart: unless-stopped
+    networks:
+      - kidcredo
+networks:
+  housekeeping_default:
+    external: true
+  kidcredo:
+    external: true

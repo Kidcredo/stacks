@@ -1,0 +1,15 @@
+services:
+  linkding:
+    container_name: linkding
+    image: ghcr.io/sissbruecker/linkding:latest
+    #ports: 9090
+    volumes:
+      - ${KD_DIR}/linkding:/etc/linkding/data
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true
+x-dockge:
+  urls:
+    - https://link.homelab.kidcredo.com

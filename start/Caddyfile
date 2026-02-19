@@ -1,0 +1,52 @@
+{
+  email {env.CLOUDFLARE_EMAIL}
+  acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+}
+
+(home) {
+  tls {
+    dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+  }
+}
+
+*.home.kidcredo.com, *.homelab.kidcredo.com {
+  import home
+
+  # map must be *inside* the site block
+  map {labels.3} {backend} {
+    ai       langflow:7860
+    bgmr     fast-music-remover:8080
+    control  arcane:3552
+    code     code-server:8443
+    notes    silverbullet:3000
+    cup      cup:8000
+    chart    chartdb:80
+    change   changedetection:5000
+    data     metabase:3000
+    db	     db-admin:80
+    docs     docmost:3000
+    design   penpot:8080
+    draw     draw:8080
+    finance  actual:5006
+    git      gitea:3000
+    links    karakeep:3000
+    link     linkding:9090
+    mail     mailcatch:1080
+    network	 networking-toolbox:3000
+    photos   immich_server:2283
+    pdf      bentopdf:80
+    search   searxng:8080
+    sheets   nocodb:8080
+    uptime   uptime-kuma:3001
+    vault    vaultwarden:80
+    manage	 termix:8080
+  }
+
+  reverse_proxy {backend}
+}
+
+home.kidcredo.com, homelab.kidcredo.com {
+  import home
+
+  reverse_proxy glance:8080
+}

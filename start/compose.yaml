@@ -1,0 +1,32 @@
+services:
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: caddy
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ${KD_CADDY_CONFIG}:/config
+      - ${KD_CADDY_DATA}:/data
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    networks:
+      - kidcredo
+  arcane:
+    image: ghcr.io/getarcaneapp/arcane:latest
+    container_name: arcane
+    env_file: .env
+    restart: unless-stopped
+    # ports:3552
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${KD_DIR}:/app/data
+      - ${KD_STACKS}:/app/data/projects
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true

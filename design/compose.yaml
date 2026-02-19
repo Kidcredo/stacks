@@ -1,0 +1,120 @@
+x-flags: &penpot-flags
+  PENPOT_FLAGS: enable-registration enable-login-with-password enable-smtp
+x-uri: &penpot-public-uri
+  PENPOT_PUBLIC_URI: http://localhost:8080
+x-body-size: &penpot-http-body-size
+  PENPOT_HTTP_SERVER_MAX_BODY_SIZE: 31457280
+  PENPOT_HTTP_SERVER_MAX_MULTIPART_BODY_SIZE: 367001600
+x-secret-key: &penpot-secret-key
+  PENPOT_SECRET_KEY: ${SECRET}
+services:
+  penpot-frontend:
+    container_name: penpot
+    image: penpotapp/frontend:latest
+    restart: always
+    env_file: .env
+    volumes:
+      - ${KD_ASSETS}:/opt/data/assets
+    depends_on:
+      - penpot-backend
+      - penpot-exporter
+    networks:
+      - penpot
+      - kidcredo
+    environment:
+      <<:
+        - *penpot-flags
+        - *penpot-http-body-size
+  penpot-backend:
+    image: penpotapp/backend:latest
+    restart: always
+    env_file: .env
+    volumes:
+      - ${KD_ASSETS}:/opt/data/assets
+    depends_on:
+      penpot-postgres:
+        condition: service_healthy
+      penpot-valkey:
+        condition: service_healthy
+    networks:
+      - penpot
+      - kidcredo
+    environment:
+      <<:
+        - *penpot-flags
+        - *penpot-public-uri
+        - *penpot-http-body-size
+        - *penpot-secret-key
+      PENPOT_DATABASE_URI: postgresql://penpot-postgres/penpot
+      PENPOT_DATABASE_USERNAME: penpot
+      PENPOT_DATABASE_PASSWORD: ${PWD}
+      PENPOT_REDIS_URI: redis://penpot-valkey/0
+      PENPOT_ASSETS_STORAGE_BACKEND: assets-fs
+      PENPOT_STORAGE_ASSETS_FS_DIRECTORY: /opt/data/assets
+      PENPOT_TELEMETRY_ENABLED: false
+      PENPOT_TELEMETRY_REFERER: compose
+      PENPOT_SMTP_DEFAULT_FROM: ${EMAIL}
+      PENPOT_SMTP_DEFAULT_REPLY_TO: ${EMAIL}
+      PENPOT_SMTP_HOST: mailcatch
+      PENPOT_SMTP_PORT: 1025
+      PENPOT_SMTP_TLS: false
+      PENPOT_SMTP_SSL: false
+  penpot-exporter:
+    image: penpotapp/exporter:latest
+    restart: always
+    env_file: .env
+    depends_on:
+      penpot-valkey:
+        condition: service_healthy
+    networks:
+      - penpot
+      - kidcredo
+    environment:
+      <<:
+        - *penpot-secret-key
+      PENPOT_PUBLIC_URI: http://penpot-frontend:8080
+      PENPOT_REDIS_URI: redis://penpot-valkey/0
+  penpot-postgres:
+    image: postgres:18-alpine
+    restart: always
+    env_file: .env
+    stop_signal: SIGINT
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U penpot
+      interval: 2s
+      timeout: 10s
+      retries: 5
+      start_period: 2s
+    volumes:
+      - ${KD_DB}:/var/lib/postgresql/data
+    networks:
+      - penpot
+      - kidcredo
+    environment:
+      - POSTGRES_INITDB_ARGS=--data-checksums
+      - POSTGRES_DB=penpot
+      - POSTGRES_USER=penpot
+      - POSTGRES_PASSWORD=${PWD}
+  penpot-valkey:
+    image: valkey/valkey:9-alpine
+    restart: always
+    env_file: .env
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - valkey-cli ping | grep PONG
+      interval: 1s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+    networks:
+      - penpot
+      - kidcredo
+    environment:
+      - VALKEY_EXTRA_FLAGS=--maxmemory 128mb --maxmemory-policy volatile-lfu
+networks:
+  penpot: {}
+  kidcredo:
+    external: true

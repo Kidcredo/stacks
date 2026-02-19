@@ -1,0 +1,13 @@
+services:
+  termix:
+    image: ghcr.io/lukegus/termix:latest
+    container_name: termix
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ${KD_DIR}/termix/:/app/data
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true

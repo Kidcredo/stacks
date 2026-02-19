@@ -1,0 +1,29 @@
+services:
+  nocodb:
+    container_name: nocodb
+    image: nocodb/nocodb:latest
+    env_file: .env
+    depends_on:
+      nocodb_db:
+        condition: service_healthy
+    restart: always
+    volumes:
+      - ${KD_DATA}:/usr/app/data
+    networks:
+      - kidcredo
+  nocodb_db:
+    env_file: .env
+    healthcheck:
+      interval: 10s
+      retries: 10
+      test: pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      timeout: 2s
+    image: postgres:16.6
+    restart: always
+    volumes:
+      - ${KD_DB}:/var/lib/postgresql/data
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true

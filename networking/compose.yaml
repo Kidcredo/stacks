@@ -1,0 +1,9 @@
+services:
+  networking-toolbox:
+    container_name: networking-toolbox
+    image: lissy93/networking-toolbox
+    networks:
+      - kidcredo
+networks:
+  kidcredo:
+    external: true
